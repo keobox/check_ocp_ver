@@ -5,16 +5,20 @@ from bs4 import BeautifulSoup
 from tinydb import TinyDB
 
 
-def get_table():
+def get_tables():
     """Change this to select the HTML table to scrape"""
-    return "4stable_table"
+    return ["4stable_table", "4devpreview_table"]
 
 
-def filter_interested_releases(group_idx, row):
+def filter_interested_releases(group_idx, row, table):
     """Change this to filter versions"""
     group = row[group_idx]
-    if group == "4.16" or group == "4.14":
-        return True
+    if table == "4stable_table":
+        if group == "4.16" or group == "4.14":
+            return True
+    if table == "4devpreview_table":
+        if group == "4.17":
+            return True
     return False
 
 
@@ -28,22 +32,24 @@ def to_dicts(header, rows):
     return data
 
 
-def filter_stable_and_accepted_releases(s):
-    t = s.find("table", {"id": get_table()})
-    header = []
-    rows = []
-    group_idx = 0
-    phase_idx = 0
-    for i, row in enumerate(t.find_all("tr")):
-        if i == 0:
-            header = [el.text.strip() for el in row.find_all("th")]
-            group_idx = header.index("Version Grouping")
-            phase_idx = header.index("Phase")
-        else:
-            rows.append([el.text.strip() for el in row.find_all("td")])
-    rows = (r for r in rows if filter_interested_releases(group_idx, r))
-    rows = [r for r in rows if r[phase_idx] == "Accepted"]
-    data = to_dicts(header, rows)
+def filter_stable_and_accepted_releases(parsed_page):
+    data = []
+    for table in get_tables():
+        t = parsed_page.find("table", {"id": table})
+        header = []
+        rows = []
+        group_idx = 0
+        phase_idx = 0
+        for i, row in enumerate(t.find_all("tr")):
+            if i == 0:
+                header = [el.text.strip() for el in row.find_all("th")]
+                group_idx = header.index("Version Grouping")
+                phase_idx = header.index("Phase")
+            else:
+                rows.append([el.text.strip() for el in row.find_all("td")])
+        rows = (r for r in rows if filter_interested_releases(group_idx, r, table))
+        rows = [r for r in rows if r[phase_idx] == "Accepted"]
+        data = data + to_dicts(header, rows)
     return data
 
 
@@ -56,8 +62,8 @@ def save(data):
 def main():
     r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/")
     if r.status_code == 200:
-        parsed = BeautifulSoup(r.text, features="html.parser")
-        data = filter_stable_and_accepted_releases(parsed)
+        parsed_page = BeautifulSoup(r.text, features="html.parser")
+        data = filter_stable_and_accepted_releases(parsed_page)
         save(data)
     else:
         print("status_code", r.status_code)
