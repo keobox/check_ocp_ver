@@ -1,35 +1,38 @@
 """Check current page against last saved page."""
 
+from typing import Dict, List, Tuple
+
 import requests
 from bs4 import BeautifulSoup
 from tinydb import TinyDB, where
+from tinydb.table import Document
 from baseline import filter_stable_and_accepted_releases
 
 
-def check(current, baseline):
+def check(current_parsed_page: List[Dict[str, str]], baseline: TinyDB):
     """Change this to check different versions"""
-    check_ver("4.14", current, baseline)
-    check_ver("4.16", current, baseline)
-    check_ver("4.17", current, baseline)
+    check_ver("4.14", current_parsed_page, baseline)
+    check_ver("4.16", current_parsed_page, baseline)
+    check_ver("4.17", current_parsed_page, baseline)
 
 
-def sort_by_latest_version(saved_versions):
+def sort_by_latest_version(saved_versions: List[Document]):
     for entry in saved_versions:
-        ver = [v for v in entry["Name"].split(".")]
-        if "rc" or "ec" in ver[2]:
-            minor = ver[2].split("-")[0]
-            ver[2] = minor
-        ver = tuple([int(v) for v in ver])
+        ver_s: List[str] = [v for v in entry["Name"].split(".")]
+        if "rc" or "ec" in ver_s[2]:
+            minor: str = ver_s[2].split("-")[0]
+            ver_s[2] = minor
+        ver: Tuple[int, ...] = tuple([int(v) for v in ver_s])
         entry["ver"] = ver
     saved_versions.sort(key=lambda entry: entry["ver"], reverse=True)
 
 
-def check_ver(version, current, baseline):
-    current_group = [r for r in current if r["Version Grouping"] == version]
+def check_ver(version: str, current_page: List[Dict[str, str]], baseline: TinyDB):
+    current_group = [r for r in current_page if r["Version Grouping"] == version]
     saved_group = baseline.search(where("Version Grouping") == version)
     sort_by_latest_version(saved_group)
-    current_ver = current_group[0]["Name"]
-    saved_ver = saved_group[0]["Name"]
+    current_ver: str = current_group[0]["Name"]
+    saved_ver: str = saved_group[0]["Name"]
     if current_ver != saved_ver:
         print("New version:", current_ver)
         baseline.insert(current_group[0])
@@ -38,7 +41,7 @@ def check_ver(version, current, baseline):
         print("Current version:", current_ver, "Saved version:", saved_ver)
 
 
-def load():
+def load() -> TinyDB:
     return TinyDB("stable_accepted_releases.json")
 
 

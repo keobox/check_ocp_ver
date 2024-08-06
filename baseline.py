@@ -1,18 +1,20 @@
 """Create the releses db to check against."""
 
+from typing import List, Dict
+
 import requests
 from bs4 import BeautifulSoup
 from tinydb import TinyDB
 
 
-def get_tables():
+def get_tables() -> List[str]:
     """Change this to select the HTML table to scrape"""
     return ["4stable_table", "4devpreview_table"]
 
 
-def filter_interested_releases(group_idx, row, table):
+def filter_interested_releases(group_idx: int, row: List[str], table: str):
     """Change this to filter versions"""
-    group = row[group_idx]
+    group: str = row[group_idx]
     if table == "4stable_table":
         if group == "4.16" or group == "4.14":
             return True
@@ -22,8 +24,8 @@ def filter_interested_releases(group_idx, row, table):
     return False
 
 
-def to_dicts(header, rows):
-    data = []
+def to_dicts(header: List[str], rows: List[List[str]]) -> List[Dict[str, str]]:
+    data: List[Dict[str, str]] = []
     for row in rows:
         entry = {}
         for i, key in enumerate(header):
@@ -32,14 +34,14 @@ def to_dicts(header, rows):
     return data
 
 
-def filter_stable_and_accepted_releases(parsed_page):
-    data = []
+def filter_stable_and_accepted_releases(parsed_page) -> List[Dict[str, str]]:
+    data: List[Dict[str, str]] = []
     for table in get_tables():
         t = parsed_page.find("table", {"id": table})
-        header = []
-        rows = []
-        group_idx = 0
-        phase_idx = 0
+        header: List[str] = []
+        rows: List[List[str]] = []
+        group_idx: int = 0
+        phase_idx: int = 0
         for i, row in enumerate(t.find_all("tr")):
             if i == 0:
                 header = [el.text.strip() for el in row.find_all("th")]
@@ -47,13 +49,13 @@ def filter_stable_and_accepted_releases(parsed_page):
                 phase_idx = header.index("Phase")
             else:
                 rows.append([el.text.strip() for el in row.find_all("td")])
-        rows = (r for r in rows if filter_interested_releases(group_idx, r, table))
-        rows = [r for r in rows if r[phase_idx] == "Accepted"]
+        gen_rows = (r for r in rows if filter_interested_releases(group_idx, r, table))
+        rows = [r for r in gen_rows if r[phase_idx] == "Accepted"]
         data = data + to_dicts(header, rows)
     return data
 
 
-def save(data):
+def save(data: List[Dict[str, str]]):
     db = TinyDB("stable_accepted_releases.json")
     for entry in data:
         db.insert(entry)
