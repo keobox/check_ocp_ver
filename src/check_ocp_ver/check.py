@@ -14,6 +14,7 @@ def check(current_parsed_page: List[Dict[str, str]], baseline: TinyDB):
     check_ver("4.14", current_parsed_page, baseline)
     check_ver("4.16", current_parsed_page, baseline)
     check_ver("4.17", current_parsed_page, baseline)
+    check_ver("4.18", current_parsed_page, baseline)
 
 
 def sort_by_latest_version(saved_versions: List[Document]):
@@ -31,14 +32,18 @@ def check_ver(version: str, current_page: List[Dict[str, str]], baseline: TinyDB
     current_group = [r for r in current_page if r["Version Grouping"] == version]
     saved_group = baseline.search(where("Version Grouping") == version)
     sort_by_latest_version(saved_group)
-    current_ver: str = current_group[0]["Name"]
-    saved_ver: str = saved_group[0]["Name"]
-    if current_ver != saved_ver:
-        print("New version:", current_ver)
-        baseline.insert(current_group[0])
-        print("saved!")
+    if not current_group:
+        print("version", version)
+        print("Not found")
     else:
-        print("Current version:", current_ver, "Saved version:", saved_ver)
+        current_ver: str = current_group[0]["Name"]
+        saved_ver: str = saved_group[0]["Name"]
+        if current_ver != saved_ver:
+            print("New version:", current_ver)
+            baseline.insert(current_group[0])
+            print("saved!")
+        else:
+            print("Current version:", current_ver, "Saved version:", saved_ver)
 
 
 def load() -> TinyDB:

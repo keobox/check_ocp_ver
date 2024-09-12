@@ -1,6 +1,6 @@
 """Create the releses db to check against."""
 
-from typing import List, Dict
+from typing import List, Dict, Set
 
 import requests
 from bs4 import BeautifulSoup
@@ -12,14 +12,24 @@ def get_tables() -> List[str]:
     return ["4stable_table", "4devpreview_table"]
 
 
+def get_stable_releases() -> Set[str]:
+    """Change this to select the stable versions."""
+    return {"4.14", "4.16", "4.17"}
+
+
+def get_preview_releases() -> Set[str]:
+    """Change this to select the development versions."""
+    return {"4.18"}
+
+
 def filter_interested_releases(group_idx: int, row: List[str], table: str):
     """Change this to filter versions"""
     group: str = row[group_idx]
     if table == "4stable_table":
-        if group == "4.16" or group == "4.14":
+        if group in get_stable_releases():
             return True
     if table == "4devpreview_table":
-        if group == "4.17":
+        if group in get_preview_releases():
             return True
     return False
 
