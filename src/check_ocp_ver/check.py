@@ -20,9 +20,12 @@ def check(current_parsed_page: List[Dict[str, str]], baseline: TinyDB):
 def sort_by_latest_version(saved_versions: List[Document]):
     for entry in saved_versions:
         ver_s: List[str] = [v for v in entry["Name"].split(".")]
-        if "rc" or "ec" in ver_s[2]:
-            minor: str = ver_s[2].split("-")[0]
-            ver_s[2] = minor
+        if "ec" in ver_s[2]:
+            ver_s[2] = "0"
+        elif "rc" in ver_s[2]:
+            ver_s[2] = "1"
+        else:
+            ver_s = [ver_s[0], ver_s[1], "2", ver_s[2]]
         ver: Tuple[int, ...] = tuple([int(v) for v in ver_s])
         entry["ver"] = ver
     saved_versions.sort(key=lambda entry: entry["ver"], reverse=True)
