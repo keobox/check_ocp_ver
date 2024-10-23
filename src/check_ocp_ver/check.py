@@ -13,7 +13,6 @@ def check(current_parsed_page: List[Dict[str, str]], baseline: TinyDB):
     """Change this to check different versions"""
     check_ver("4.14", current_parsed_page, baseline)
     check_ver("4.16", current_parsed_page, baseline)
-    check_ver("4.17", current_parsed_page, baseline)
     check_ver("4.18", current_parsed_page, baseline)
 
 
