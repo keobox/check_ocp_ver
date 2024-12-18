@@ -31,27 +31,31 @@ def sort_by_latest_version(saved_versions: List[Document]):
     saved_versions.sort(key=lambda entry: entry["ver"], reverse=True)
 
 
+def save_and_acknowledge_version(
+    current_ver: str, current_group: List[Dict[str, str]], baseline: TinyDB
+):
+    print("New version:", current_ver)
+    baseline.insert(current_group[0])
+    print("saved!")
+
+
 def check_ver(version: str, current_page: List[Dict[str, str]], baseline: TinyDB):
     current_group = [r for r in current_page if r["Version Grouping"] == version]
     saved_group = baseline.search(where("Version Grouping") == version)
     sort_by_latest_version(saved_group)
     if not current_group:
         print("version", version)
-        print("Not found")
+        print("Not found in current page")
     elif not current_group or not saved_group:
         print("version", version)
         print("Not saved")
         new_current_ver: str = current_group[0]["Name"]
-        print("New version:", new_current_ver)
-        baseline.insert(current_group[0])
-        print("saved!")
+        save_and_acknowledge_version(new_current_ver, current_group, baseline)
     else:
         current_ver: str = current_group[0]["Name"]
         saved_ver: str = saved_group[0]["Name"]
         if current_ver != saved_ver:
-            print("New version:", current_ver)
-            baseline.insert(current_group[0])
-            print("saved!")
+            save_and_acknowledge_version(current_ver, current_group, baseline)
         else:
             print("Current version:", current_ver, "Saved version:", saved_ver)
 
