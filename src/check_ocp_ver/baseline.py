@@ -14,7 +14,7 @@ def get_tables() -> List[str]:
 
 def get_stable_releases() -> Set[str]:
     """Change this to select the stable versions."""
-    return {"4.14", "4.16", "4.18"}
+    return {"4.16", "4.18"}
 
 
 def get_preview_releases() -> Set[str]:
