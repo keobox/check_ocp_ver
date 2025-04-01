@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from tinydb import TinyDB, where
 from tinydb.table import Document
-from baseline import filter_stable_and_accepted_releases
+from baseline import filter_latest_stable_and_accepted_releases
 
 
 def check(current_parsed_page: List[Dict[str, str]], baseline: TinyDB):
@@ -68,7 +68,7 @@ def main():
     r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/")
     if r.status_code == 200:
         parsed_page = BeautifulSoup(r.text, features="html.parser")
-        data = filter_stable_and_accepted_releases(parsed_page)
+        data = filter_latest_stable_and_accepted_releases(parsed_page)
         db = load()
         check(data, db)
     else:

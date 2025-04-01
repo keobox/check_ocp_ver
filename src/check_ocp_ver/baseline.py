@@ -44,7 +44,7 @@ def to_dicts(header: List[str], rows: List[List[str]]) -> List[Dict[str, str]]:
     return data
 
 
-def filter_stable_and_accepted_releases(parsed_page) -> List[Dict[str, str]]:
+def filter_latest_stable_and_accepted_releases(parsed_page) -> List[Dict[str, str]]:
     data: List[Dict[str, str]] = []
     for table in get_tables():
         t = parsed_page.find("table", {"id": table})
@@ -52,13 +52,19 @@ def filter_stable_and_accepted_releases(parsed_page) -> List[Dict[str, str]]:
         rows: List[List[str]] = []
         group_idx: int = 0
         phase_idx: int = 0
+        prev_ver: str = ""
         for i, row in enumerate(t.find_all("tr")):
             if i == 0:
                 header = [el.text.strip() for el in row.find_all("th")]
                 group_idx = header.index("Version Grouping")
                 phase_idx = header.index("Phase")
             else:
-                rows.append([el.text.strip() for el in row.find_all("td")])
+                current_ver_str: str = row.find_all("td")[0].text.strip()
+                current_ver_str_list: List = current_ver_str.split(".")[:2]
+                current_ver: str = ".".join(current_ver_str_list)
+                if current_ver != prev_ver:
+                    rows.append([el.text.strip() for el in row.find_all("td")])
+                    prev_ver = current_ver
         gen_rows = (r for r in rows if filter_interested_releases(group_idx, r, table))
         rows = [r for r in gen_rows if r[phase_idx] == "Accepted"]
         data = data + to_dicts(header, rows)
@@ -75,7 +81,7 @@ def main():
     r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/")
     if r.status_code == 200:
         parsed_page = BeautifulSoup(r.text, features="html.parser")
-        data = filter_stable_and_accepted_releases(parsed_page)
+        data = filter_latest_stable_and_accepted_releases(parsed_page)
         save(data)
     else:
         print("status_code", r.status_code)
