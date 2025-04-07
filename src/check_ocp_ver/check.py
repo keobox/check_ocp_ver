@@ -45,7 +45,7 @@ def check_ver(version: str, current_page: List[Dict[str, str]], baseline: TinyDB
     if not current_group:
         print("version", version)
         print("Not found in current page")
-    elif not current_group or not saved_group:
+    elif not saved_group:
         print("version", version)
         print("Not saved")
         new_current_ver: str = current_group[0]["Name"]
