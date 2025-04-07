@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 
 import requests
 from bs4 import BeautifulSoup
-from tinydb import TinyDB, where
+from tinydb import Query, TinyDB, where
 from tinydb.table import Document
 from baseline import filter_latest_stable_and_accepted_releases
 
@@ -16,20 +16,6 @@ def check(current_parsed_page: List[Dict[str, str]], baseline: TinyDB):
     check_ver("4.19", current_parsed_page, baseline)
 
 
-def sort_by_latest_version(saved_versions: List[Document]):
-    for entry in saved_versions:
-        ver_s: List[str] = [v for v in entry["Name"].split(".")]
-        if "ec" in ver_s[2]:
-            ver_s[2] = "0"
-        elif "rc" in ver_s[2]:
-            ver_s[2] = "1"
-        else:
-            ver_s = [ver_s[0], ver_s[1], "2", ver_s[2]]
-        ver: Tuple[int, ...] = tuple([int(v) for v in ver_s])
-        entry["ver"] = ver
-    saved_versions.sort(key=lambda entry: entry["ver"], reverse=True)
-
-
 def save_and_acknowledge_version(
     current_ver: str, current_group: List[Dict[str, str]], baseline: TinyDB
 ):
@@ -38,14 +24,20 @@ def save_and_acknowledge_version(
     print("saved!")
 
 
+def update_and_acknowledge_version(current_ver: str, prev_ver: str, baseline: TinyDB):
+    ver = Query()
+    print("New version:", current_ver)
+    baseline.update({"Name": current_ver}, ver.Name == prev_ver)
+    print("updated!")
+
+
 def check_ver(version: str, current_page: List[Dict[str, str]], baseline: TinyDB):
     current_group = [r for r in current_page if r["Version Grouping"] == version]
     saved_group = baseline.search(where("Version Grouping") == version)
-    sort_by_latest_version(saved_group)
     if not current_group:
         print("version", version)
         print("Not found in current page")
-    elif not current_group or not saved_group:
+    elif not saved_group:
         print("version", version)
         print("Not saved")
         new_current_ver: str = current_group[0]["Name"]
@@ -54,7 +46,7 @@ def check_ver(version: str, current_page: List[Dict[str, str]], baseline: TinyDB
         current_ver: str = current_group[0]["Name"]
         saved_ver: str = saved_group[0]["Name"]
         if current_ver != saved_ver:
-            save_and_acknowledge_version(current_ver, current_group, baseline)
+            update_and_acknowledge_version(current_ver, saved_ver, baseline)
         else:
             print("Current version:", current_ver, "Saved version:", saved_ver)
 

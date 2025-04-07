@@ -74,7 +74,8 @@ def filter_latest_stable_and_accepted_releases(parsed_page) -> List[Dict[str, st
 def save(data: List[Dict[str, str]]):
     db = TinyDB("stable_accepted_releases.json")
     for entry in data:
-        db.insert(entry)
+        item = {"Name": entry["Name"], "Version Grouping": entry["Version Grouping"]}
+        db.insert(item)
 
 
 def main():
