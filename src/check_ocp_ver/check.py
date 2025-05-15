@@ -14,6 +14,7 @@ def check(current_parsed_page: List[Dict[str, str]], baseline: TinyDB):
     check_ver("4.16", current_parsed_page, baseline)
     check_ver("4.18", current_parsed_page, baseline)
     check_ver("4.19", current_parsed_page, baseline)
+    check_ver("4.20", current_parsed_page, baseline)
 
 
 def save_and_acknowledge_version(
