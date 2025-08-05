@@ -1,5 +1,6 @@
 """Check current page against last saved page."""
 
+import pprint
 from typing import Dict, List, Union
 
 import requests
@@ -70,15 +71,24 @@ def load() -> TinyDB:
     return TinyDB("stable_accepted_releases.json")
 
 
-def main():
-    r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/")
+def compare_versions() -> List[Dict[str, Union[str, bool]]]:
+    r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/", timeout=30)
+    response: Dict[str, Union[str, bool]] = {}
+    response["current_version"] = "None"
+    response["saved_version"] = "None"
+    response["status"] = f"status_code={r.status_code}"
+    response["changed"] = False
+    versions: List[Dict[str, Union[str, bool]]] = [response]
     if r.status_code == 200:
         parsed_page = BeautifulSoup(r.text, features="html.parser")
         data = filter_latest_stable_and_accepted_releases(parsed_page)
         db = load()
-        print(check(data, db))
-    else:
-        print("status_code", r.status_code)
+        return check(data, db)
+    return versions
+
+
+def main() -> None:
+    pprint.pprint(compare_versions())
 
 
 if __name__ == "__main__":

@@ -77,7 +77,7 @@ def save(data: List[Dict[str, str]]):
         db.insert(item)
 
 
-def main():
+def main() -> None:
     r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/")
     if r.status_code == 200:
         parsed_page = BeautifulSoup(r.text, features="html.parser")
