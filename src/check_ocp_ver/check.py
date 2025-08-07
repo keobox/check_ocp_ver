@@ -67,11 +67,11 @@ def check_ver(
     return response
 
 
-def load() -> TinyDB:
-    return TinyDB("stable_accepted_releases.json")
+def load(db_file: str) -> TinyDB:
+    return TinyDB(db_file)
 
 
-def compare_versions() -> List[Dict[str, Union[str, bool]]]:
+def compare_versions(db_file: str) -> List[Dict[str, Union[str, bool]]]:
     response: Dict[str, Union[str, bool]] = {}
     response["current_version"] = "None"
     response["saved_version"] = "None"
@@ -79,12 +79,14 @@ def compare_versions() -> List[Dict[str, Union[str, bool]]]:
     response["changed"] = False
     versions: List[Dict[str, Union[str, bool]]] = [response]
     try:
-        r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/", timeout=10)
+        r = requests.get(
+            "https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/", timeout=10
+        )
         response["status"] = f"status_code={r.status_code}"
         if r.status_code == 200:
             parsed_page = BeautifulSoup(r.text, features="html.parser")
             data = filter_latest_stable_and_accepted_releases(parsed_page)
-            db = load()
+            db = load(db_file)
             return check(data, db)
         return versions
     except requests.exceptions.HTTPError as errh:
@@ -104,9 +106,10 @@ def compare_versions() -> List[Dict[str, Union[str, bool]]]:
         response["status"] = repr(errex)
         return versions
 
-def main() -> None:
-    pprint.pprint(compare_versions())
+
+def main(db_file: str) -> None:
+    pprint.pprint(compare_versions(db_file))
 
 
 if __name__ == "__main__":
-    main()
+    main("stable_accepted_releases.json")

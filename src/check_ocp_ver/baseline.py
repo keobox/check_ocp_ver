@@ -70,22 +70,22 @@ def filter_latest_stable_and_accepted_releases(parsed_page) -> List[Dict[str, st
     return data
 
 
-def save(data: List[Dict[str, str]]):
-    db = TinyDB("stable_accepted_releases.json")
+def save(data: List[Dict[str, str]], db_file: str):
+    db = TinyDB(db_file)
     for entry in data:
         item = {"Name": entry["Name"], "Version Grouping": entry["Version Grouping"]}
         db.insert(item)
 
 
-def main() -> None:
+def main(db_file: str) -> None:
     r = requests.get("https://openshift-release.apps.ci.l2s4.p1.openshiftapps.com/")
     if r.status_code == 200:
         parsed_page = BeautifulSoup(r.text, features="html.parser")
         data = filter_latest_stable_and_accepted_releases(parsed_page)
-        save(data)
+        save(data, db_file)
     else:
         print("status_code", r.status_code)
 
 
 if __name__ == "__main__":
-    main()
+    main("stable_accepted_releases.json")
