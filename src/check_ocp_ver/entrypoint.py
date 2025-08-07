@@ -2,8 +2,8 @@
 
 import os
 
-import baseline
-import check
+import check_ocp_ver.baseline as baseline
+import check_ocp_ver.check as check
 
 
 def main():

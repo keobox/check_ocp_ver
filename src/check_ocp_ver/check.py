@@ -6,7 +6,7 @@ from typing import Dict, List, Union
 import requests
 from bs4 import BeautifulSoup
 from tinydb import Query, TinyDB, where
-from baseline import filter_latest_stable_and_accepted_releases
+import check_ocp_ver.baseline as baseline
 
 
 def check(
@@ -49,7 +49,7 @@ def check_ver(
         response["changed"] = False
     elif not saved_group:
         new_current_ver: str = current_group[0]["Name"]
-        response["current_version"] = version
+        response["current_version"] = new_current_ver
         response["saved_version"] = new_current_ver
         response["status"] = "Version of a new group saved"
         response["changed"] = False
@@ -63,7 +63,7 @@ def check_ver(
         response["changed"] = False
         if current_ver != saved_ver:
             update_and_acknowledge_version(current_ver, saved_ver, baseline)
-            response["changed"] = False
+            response["changed"] = True
     return response
 
 
@@ -85,7 +85,7 @@ def compare_versions(db_file: str) -> List[Dict[str, Union[str, bool]]]:
         response["status"] = f"status_code={r.status_code}"
         if r.status_code == 200:
             parsed_page = BeautifulSoup(r.text, features="html.parser")
-            data = filter_latest_stable_and_accepted_releases(parsed_page)
+            data = baseline.filter_latest_stable_and_accepted_releases(parsed_page)
             db = load(db_file)
             return check(data, db)
         return versions
