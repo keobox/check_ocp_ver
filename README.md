@@ -27,7 +27,7 @@ For local development with all dependencies including development tools:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Create virtual environment and install all dependencies (including dev tools like black)
-uv sync
+uv sync --all-extras
 
 # For production-only dependencies (without dev tools)
 uv sync --no-dev

@@ -2,3 +2,5 @@ ocp-env
 *.json
 __pycache__
 .DS_Store
+requirements.txt
+.vscode
