@@ -1,6 +1,0 @@
-beautifulsoup4
-black
-requests
-tinydb
-types-beautifulsoup4
-types-requests

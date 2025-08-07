@@ -112,9 +112,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
-    { name = "black" },
     { name = "requests" },
     { name = "tinydb" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "black" },
     { name = "types-beautifulsoup4" },
     { name = "types-requests" },
 ]
@@ -122,11 +126,11 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
-    { name = "black", specifier = ">=24.8.0" },
+    { name = "black", marker = "extra == 'dev'", specifier = ">=24.8.0" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "tinydb", specifier = ">=4.8.0" },
-    { name = "types-beautifulsoup4", specifier = ">=4.12.0.20240511" },
-    { name = "types-requests", specifier = ">=2.32.0.20240712" },
+    { name = "types-beautifulsoup4", marker = "extra == 'dev'", specifier = ">=4.12.0.20240511" },
+    { name = "types-requests", marker = "extra == 'dev'", specifier = ">=2.32.0.20240712" },
 ]
 
 [[package]]
