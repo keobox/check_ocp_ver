@@ -18,6 +18,7 @@ def check(
     response.append(check_ver("4.18", current_parsed_page, baseline))
     response.append(check_ver("4.19", current_parsed_page, baseline))
     response.append(check_ver("4.20", current_parsed_page, baseline))
+    response.append(check_ver("4.21", current_parsed_page, baseline))
     return response
 
 

@@ -19,7 +19,7 @@ def get_stable_releases() -> Set[str]:
 
 def get_preview_releases() -> Set[str]:
     """Change this to select the development versions."""
-    return {}
+    return {"4.21"}
 
 
 def filter_interested_releases(group_idx: int, row: List[str], table: str):
